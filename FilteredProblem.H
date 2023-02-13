@@ -81,9 +81,11 @@ FilteredProblem::FilteringStepU()
 {
   
    UfiField.setSize(UorgField.size()); 
-   Eigen::MatrixXd UmassMatrix = ITHACAutilities::getMassMatrix( Umodes, NUMODES ); // <Phi_i,Phi_j>
+   Eigen::MatrixXd UmassMatrix = ITHACAutilities::getMassMatrix( Umodes, NUMODES,true ); // <Phi_i,Phi_j>
    Eigen::MatrixXd SystemMatrix(NUMODES,NUMODES);
    Eigen::MatrixXd rhs(NUMODES,1);
+   
+
    label snapI = 0;
    for( snapI = 0; snapI < UorgField.size(); snapI ++)
    {
@@ -133,11 +135,11 @@ FilteredProblem::FilteringStepHe()
 {
   // Creating the mass-matrix
    HefiField.setSize(HeOrgField.size());
-   Eigen::MatrixXd HemassMatrix = ITHACAutilities::getMassMatrix( Hemodes, NHEMODES ); // <Phi_i,Phi_j>
+   Eigen::MatrixXd HemassMatrix = ITHACAutilities::getMassMatrix( Hemodes, NHEMODES,true); // <Phi_i,Phi_j>
    Eigen::MatrixXd SystemMatrix(NHEMODES,NHEMODES);
    Eigen::MatrixXd rhs(NHEMODES,1);
-
-   Info << " Filtering the Enthalpy fields "<<endl;
+   
+   Info << " Filtering the Scalar fields "<<endl;
    label snapI = 0;
   for(snapI = 0; snapI < HeOrgField.size(); snapI ++)
    {
@@ -172,7 +174,7 @@ FilteredProblem::FilteringStepHe()
           }// End local reconstruction
      
     }// end snapshot cycle
- Info << "----End the Enthalpy fields filtering step---- "<<"Total HeSnap: "<< snapI <<endl;
+ Info << "----End the Scalar fields filtering step---- "<<"Total HeSnap: "<< snapI <<endl;
 }// end method 
 
 /*
