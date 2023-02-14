@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
      Smodes
    );
 
-  scalar vis_nu = 100;
+  scalar vis_nu = 1e4;
 
   FP.closureViscosity = vis_nu;
   
