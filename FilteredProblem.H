@@ -81,10 +81,10 @@ FilteredProblem::FilteringStepU()
 {
   
    UfiField.setSize(UorgField.size()); 
-   Eigen::MatrixXd UmassMatrix = ITHACAutilities::getMassMatrix( Umodes, NUMODES,true ); // <Phi_i,Phi_j>
+   Eigen::MatrixXd UmassMatrix = ITHACAutilities::getMassMatrix( Umodes, NUMODES,false ); // <Phi_i,Phi_j>
    Eigen::MatrixXd SystemMatrix(NUMODES,NUMODES);
    Eigen::MatrixXd rhs(NUMODES,1);
-   
+   Field<scalar> volumes = UorgField[1].mesh().V(); //Volumes
 
    label snapI = 0;
    for( snapI = 0; snapI < UorgField.size(); snapI ++)
@@ -94,10 +94,21 @@ FilteredProblem::FilteringStepU()
 	   for (label k = 0; k<NUMODES ; k++ )
 	    {
 		 
-		 SystemMatrix(j,k) = UmassMatrix(j,k) 
-	         -fvc::domainIntegrate( fvc::laplacian(closureViscosity*Umodes[k]) & Umodes[j]).value();
+		 // Assembling the laplacian and the RHS indipendently:
+
+		 Field<scalar> laplacian = fvc::volumeIntegrate(fvc::laplacian(closureViscosity*Umodes[k]) & Umodes[j]);
+		 laplacian /= volumes; 
+                   
+
+		 SystemMatrix(j,k) = UmassMatrix(j,k) - gSum(laplacian);
+
 	    } // end loop Cols
-	   rhs(j,0) = fvc::domainIntegrate( UorgField[snapI] & Umodes[j] ).value();
+           
+	   Field<scalar> _rhsTerm = fvc::volumeIntegrate( UorgField[snapI] & Umodes[j] );
+	   _rhsTerm /= volumes;
+	  //  rhs(j,0) = fvc::domainIntegrate( UorgField[snapI] & Umodes[j] ).value();
+	   rhs(j,0) = gSum(_rhsTerm);
+
 	 }// end loop Rows
 
        // Solve the problem with Eigen & obtain Temporal Coefficients
@@ -135,23 +146,33 @@ FilteredProblem::FilteringStepHe()
 {
   // Creating the mass-matrix
    HefiField.setSize(HeOrgField.size());
-   Eigen::MatrixXd HemassMatrix = ITHACAutilities::getMassMatrix( Hemodes, NHEMODES,true); // <Phi_i,Phi_j>
+   Eigen::MatrixXd HemassMatrix = ITHACAutilities::getMassMatrix( Hemodes, NHEMODES,false); // <Phi_i,Phi_j>
    Eigen::MatrixXd SystemMatrix(NHEMODES,NHEMODES);
    Eigen::MatrixXd rhs(NHEMODES,1);
-   
+   Field<scalar> volumes = HeOrgField[1].mesh().V();
+
    Info << " Filtering the Scalar fields "<<endl;
    label snapI = 0;
   for(snapI = 0; snapI < HeOrgField.size(); snapI ++)
    {
         for ( label j = 0 ; j <NHEMODES ; j++ )
          {
+ 	   
+ 
            for (label k = 0; k<NHEMODES ; k++ )
             {
-		 
-                 SystemMatrix(j,k) = HemassMatrix(j,k)
-                 -fvc::domainIntegrate( fvc::laplacian(closureViscosity*Hemodes[k]) * Hemodes[j]).value();
+               Field<scalar> laplacian = fvc::volumeIntegrate(fvc::laplacian(closureViscosity*Hemodes[k]) * Hemodes[j]);
+               laplacian /= volumes;
+
+                 SystemMatrix(j,k) = HemassMatrix(j,k) - gSum(laplacian);
             } // end loop Cols
-           rhs(j,0) = fvc::domainIntegrate( HeOrgField[snapI] * Hemodes[j] ).value();
+
+            Field<scalar> _rhsTerm = fvc::volumeIntegrate( HeOrgField[snapI] * Hemodes[j] );
+           _rhsTerm /= volumes;
+           rhs(j,0) = gSum(_rhsTerm);
+
+
+          // rhs(j,0) = fvc::domainIntegrate( HeOrgField[snapI] * Hemodes[j] ).value();
          }// end loop Rows
 
        // Solve the problem with Eigen & obtain Temporal Coefficients
