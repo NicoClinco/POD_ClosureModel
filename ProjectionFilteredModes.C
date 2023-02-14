@@ -65,10 +65,6 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
- //  FilteredProblem FP;   
-  // PtrList<volVectorField> Vmodes;
-  // PtrList<volScalarField> Smodes;
-  //
   ITHACAparameters* para = ITHACAparameters::getInstance(mesh,runTime);
 
 
@@ -93,8 +89,6 @@ int main(int argc, char *argv[])
     List<instant> Times = runTime.times();
 
 
- // PtrList<volVectorField>& Vmodes = FP.Umodes;
- //  PtrList<volScalarField>& Smodes = FP.Hemodes;
 
   #include "Manager.H"
   #include "POD_part.H"
@@ -107,7 +101,7 @@ int main(int argc, char *argv[])
      Smodes
    );
 
-  scalar vis_nu = 1e4;
+  scalar vis_nu( readScalar(ITHACAPODdict.lookup("nu"))); //Read the viscosity
 
   FP.closureViscosity = vis_nu;
   
