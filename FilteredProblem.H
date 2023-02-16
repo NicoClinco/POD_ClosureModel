@@ -126,13 +126,13 @@ FilteredProblem::FilteringStepU()
 	// Set to zero the internalfield:
 	//
 	UfiField[snapI].ref()*=dimensionedScalar("zero",dimless,0.0);
-
-	
+         
+	UfiField[snapI].boundaryFieldRef() = UorgField[snapI].boundaryField();	
  		
        // Reconstruct-phase
        for( label coefInd = 0 ; coefInd < Coeffs.rows() ; coefInd++)
 	  {
-	    UfiField[snapI] += Umodes[coefInd] * Coeffs(coefInd,0); // Reconstruct the fields
+	    UfiField[snapI].ref() += Umodes[coefInd].internalField() * Coeffs(coefInd,0); // Reconstruct the fields
        	  }// End local reconstruction
        
     }// end snapshot cycle
@@ -187,11 +187,12 @@ FilteredProblem::FilteringStepHe()
 	// The boundary is not touched ( again )
         HefiField[snapI].ref()*=dimensionedScalar("zero",dimless,0.0);
 
+	HefiField[snapI].boundaryFieldRef() = HeOrgField[snapI].boundaryField();
 	
        // Reconstruct-phase
        for( label coefInd = 0 ; coefInd < Coeffs.rows() ; coefInd++)
           {
-            HefiField[snapI] += Hemodes[coefInd] * Coeffs(coefInd,0); // Reconstru
+            HefiField[snapI].ref() += Hemodes[coefInd].internalField() * Coeffs(coefInd,0); // Reconstru
           }// End local reconstruction
      
     }// end snapshot cycle
